@@ -10,33 +10,33 @@ Modular Verilog for a Processing-Near-Memory (PNM) AES-128 encrypt/decrypt engin
                     state_init / state_init_en (e.g. from NVMe)
                                     │
                                     ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│  aes_pnm_top                                                             │
-│  ┌───────────────────┐   init_wr   ┌──────────────────────────────┐   │
-│  │ Init FSM           │────────────▶│ feram_mem_interface           │   │
-│  │ (4 cycles load     │             │ (SRA row read/write, 4B/row)  │   │
-│  │  state_init into   │◀────────────│ rd_data                        │   │
-│  │  FeRAM)            │   sra_en,   └──────────────┬───────────────┘   │
-│  └───────────────────┘   row_addr                   │                   │
-│           │                                         │                   │
-│           │              ┌──────────────────────────▼───────────────┐  │
-│           │              │ data_n mux: mem_rd_data OR state_after_   │  │
-│           │              │ sbox (SubBytes/InvSubBytes by enc_dec)   │  │
-│           │              └──────────────────────────┬───────────────┘  │
-│           │                                         │                   │
-│  ┌────────▼────────┐                    ┌──────────▼──────────┐       │
-│  │ aes_pnm_        │  sra_en, row_addr  │ systolic_array_4x4  │       │
-│  │ controller      │  pe_en, op_sel,    │ (16× pe_8bit)       │       │
-│  │ (Load→SubBytes  │  load_psum,        │ North: data_n       │       │
-│  │  →MixCol/       │  subbytes_sel,    │ South: data_s       │       │
-│  │  AddKey→Store)  │  enc_dec, round   │ MixCol/InvMixCol    │       │
-│  └─────────────────┘                    │ by enc_dec          │       │
-│           │                              └──────────┬──────────┘       │
-│           │ ctrl_mem_wr_*                  ctrl_mem_wr_data (by row)   │
-│           └──────────────────────────────────────────┘                 │
-│                                                                        │
-│  state_out (128-bit result), round (for key schedule)                  │
-└─────────────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────┐
+│  aes_pnm_top                                                         │
+│  ┌───────────────────┐   init_wr   ┌─────────────────────────────┐   │
+│  │ Init FSM          │────────────▶│ feram_mem_interface         │   │
+│  │ (4 cycles load    │             │ (SRA row read/write, 4B/row)│   │
+│  │  state_init into  │◀────────────│ rd_data                     │   │
+│  │  FeRAM)           │   sra_en,   └──────────────┬──────────────┘   │
+│  └───────────────────┘   row_addr                   │                │
+│           │                                         │                │
+│           │              ┌──────────────────────────▼───────────────┐│
+│           │              │ data_n mux: mem_rd_data OR state_after_  ││
+│           │              │ sbox (SubBytes/InvSubBytes by enc_dec)   ││
+│           │              └──────────────────────────┬───────────────┘│
+│           │                                         │                │
+│  ┌────────▼────────┐                    ┌──────────▼──────────┐      │
+│  │ aes_pnm_        │  sra_en, row_addr  │ systolic_array_4x4  │      │
+│  │ controller      │  pe_en, op_sel,    │ (16× pe_8bit)       │      │
+│  │ (Load→SubBytes  │  load_psum,        │ North: data_n       │      │
+│  │  →MixCol/       │  subbytes_sel,     │ South: data_s       │      │
+│  │  AddKey→Store)  │  enc_dec, round    │ MixCol/InvMixCol    │      │
+│  └─────────────────┘                    │ by enc_dec          │      │
+│           │                             └──────────┬──────────┘      │
+│           │ ctrl_mem_wr_*                  ctrl_mem_wr_data (by row) │
+│           └──────────────────────────────────────────┘               │
+│                                                                      │
+│  state_out (128-bit result), round (for key schedule)                │
+└──────────────────────────────────────────────────────────────────────┘
 ```
 
 - **FeRAM memory**: Row-oriented; one row (4 bytes) read or written per cycle (Single-Row Activation, SRA). Holds the 16-byte AES state in rows 0–3.
