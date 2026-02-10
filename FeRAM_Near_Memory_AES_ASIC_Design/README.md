@@ -17,9 +17,9 @@ Modular Verilog for a Processing-Near-Memory (PNM) AES-128 encrypt/decrypt engin
 │  │ (4 cycles load    │             │ (SRA row read/write, 4B/row)│   │
 │  │  state_init into  │◀────────────│ rd_data                     │   │
 │  │  FeRAM)           │   sra_en,   └──────────────┬──────────────┘   │
-│  └───────────────────┘   row_addr                   │                │
-│           │                                         │                │
-│           │              ┌──────────────────────────▼───────────────┐│
+│  └───────────────────┘   row_addr                 │                  │
+│           │                                       │                  │
+│           │              ┌────────────────────────▼───────  ────────┐│
 │           │              │ data_n mux: mem_rd_data OR state_after_  ││
 │           │              │ sbox (SubBytes/InvSubBytes by enc_dec)   ││
 │           │              └──────────────────────────┬───────────────┘│
